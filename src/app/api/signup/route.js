@@ -1,34 +1,30 @@
-import { appendFile } from "fs/promises";
-import path from "path";
+console.log("🔥 KEY:", process.env.RESEND_API_KEY);
+import { Resend } from "resend";
 
-export async function POST(request) {
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export async function POST(req) {
   try {
-    const { email } = await request.json();
+    const { email } = await req.json();
 
     if (!email || !email.includes("@")) {
-      return new Response(JSON.stringify({ message: "Invalid email." }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
+      return new Response("Invalid email", { status: 400 });
     }
 
-    const filePath = path.join(process.cwd(), "emails.txt");
-    const entry = `${email}\n`;
+    console.log("New signup:", email);
 
-    await appendFile(filePath, entry, "utf8");
-
-    return new Response(JSON.stringify({ message: "You're on the list!" }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
+    const emailRes = await resend.emails.send({
+      from: "Geofonx <onboarding@resend.dev>",
+      to: email,
+      subject: "You're in 🧠⚡️",
+      html: `<strong>Welcome to Geofonx</strong><br/>You’re officially on the list. We don’t send spam — just chaos and build updates. ✌️`,
     });
+
+    console.log("📤 Email response:", emailRes);
+
+    return new Response("Sent", { status: 200 });
   } catch (err) {
-    console.error("Error saving email:", err);
-    return new Response(
-      JSON.stringify({ message: "Server error. Try again later." }),
-      {
-        status: 500,
-        headers: { "Content-Type": "application/json" },
-      }
-    );
+    console.error("❌ Email send error:", err);
+    return new Response("Server error", { status: 500 });
   }
 }
