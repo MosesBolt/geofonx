@@ -26,7 +26,7 @@ export async function POST(req) {
       const data = await readFile(logsPath, "utf-8");
       existing = JSON.parse(data);
     } catch (err) {
-      // File doesn't exist yet — that’s fine
+      // No file yet? No problem.
     }
 
     existing.push(newLog);

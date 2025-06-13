@@ -1,6 +1,5 @@
-console.log("🔥 KEY:", process.env.RESEND_API_KEY);
 import { Resend } from "resend";
-
+console.log("🔐 RESEND KEY:", process.env.RESEND_API_KEY);
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req) {
@@ -17,7 +16,7 @@ export async function POST(req) {
       from: "Geofonx <onboarding@resend.dev>",
       to: email,
       subject: "You're in 🧠⚡️",
-      html: `<strong>Welcome to Geofonx</strong><br/>You’re officially on the list. We don’t send spam — just chaos and build updates. ✌️`,
+      html: `<strong>Welcome to Geofonx</strong><br/>You're officially on the chaos list. Expect builds. Expect noise.`,
     });
 
     console.log("📤 Email response:", emailRes);

@@ -6,12 +6,17 @@ export default function BuildFeed() {
 
   useEffect(() => {
     const fetchLogs = async () => {
-      const res = await fetch("/buildlogs.json");
-      if (res.ok) {
-        const data = await res.json();
-        setLogs(data.reverse().slice(0, 3)); // Show 3 most recent
+      try {
+        const res = await fetch("/buildlogs.json");
+        if (res.ok) {
+          const data = await res.json();
+          setLogs(data.reverse().slice(0, 3)); // Show 3 most recent logs
+        }
+      } catch (err) {
+        console.error("❌ Error fetching logs:", err);
       }
     };
+
     fetchLogs();
   }, []);
 
@@ -27,7 +32,7 @@ export default function BuildFeed() {
           <div className="flex flex-wrap gap-2 mt-2">
             {log.tags?.map((tag, i) => (
               <span key={i} className="bg-blue-700 px-2 py-1 text-xs rounded-full">
-                #{tag}
+                #{tag.trim()}
               </span>
             ))}
           </div>
