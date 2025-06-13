@@ -18,6 +18,9 @@ export default function GeofonxLanding() {
             Africa’s Tech Misfits, United by Chaos and Code
           </p>
         </header>
+<a href="/chaos" className="text-blue-400 hover:underline text-sm">
+  🔥 Visit the Chaos Feed
+</a>
 
         <section className="space-y-4">
           <h2 className="text-2xl font-semibold">
@@ -155,7 +158,13 @@ export default function GeofonxLanding() {
         <footer className="text-center text-gray-500 mt-10">
           <p>Follow us @geofonx. Or don’t. But you’ll miss out, and we’ll laugh behind your back.</p>
           <p className="text-xs text-gray-600 mt-2">Built in Lagos. Deployed from a generator.</p>
-        </footer>
+       <p className="text-sm text-gray-500 mt-4">
+  📬 Contact us at <a href="mailto:teamfonx@geofonx.com" className="underline text-blue-400">teamfonx@geofonx.com</a>
+</p>
+<p className="text-sm text-gray-500">
+  Learn more <a href="/about" className="underline text-blue-400">About Geofonx</a>
+</p>
+ </footer>
       </div>
     </motion.div>
   );
