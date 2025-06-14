@@ -1,29 +1,31 @@
+import { NextResponse } from "next/server";
 import { Resend } from "resend";
-console.log("🔐 RESEND KEY:", process.env.RESEND_API_KEY);
+
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function POST(req) {
+  const formData = await req.formData();
+  const email = formData.get("email");
+
   try {
-    const { email } = await req.json();
-
-    if (!email || !email.includes("@")) {
-      return new Response("Invalid email", { status: 400 });
-    }
-
-    console.log("New signup:", email);
-
-    const emailRes = await resend.emails.send({
-      from: "Geofonx <onboarding@resend.dev>",
+    const data = await resend.emails.send({
+      from: "onboarding@resend.dev",
       to: email,
-      subject: "You're in 🧠⚡️",
-      html: `<strong>Welcome to Geofonx</strong><br/>You're officially on the chaos list. Expect builds. Expect noise.`,
+      subject: "Welcome to Geofonx from the CEO ( Moses Ugo)",
+      html: `<p>You're officially on the chaos list. Expect builds. Expect noise.</p>`,
     });
 
-    console.log("📤 Email response:", emailRes);
-
-    return new Response("Sent", { status: 200 });
+    console.log("New sign up:", email);
+    console.log("Resend response:", data);
+    return NextResponse.redirect("http://localhost:3000", { status: 303 });
   } catch (err) {
-    console.error("❌ Email send error:", err);
-    return new Response("Server error", { status: 500 });
+    console.error("Email error:", err);
+    return NextResponse.json(
+      {
+        error: err?.message || "Unknown error",
+        details: err,
+      },
+      { status: 500 }
+    );
   }
 }

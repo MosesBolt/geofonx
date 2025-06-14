@@ -1,41 +1,31 @@
-import { writeFile, readFile } from "fs/promises";
-import path from "path";
+import { supabase } from "../../../lib/supabaseClient";
 
-const logsPath = path.resolve(process.cwd(), "buildlogs.json");
+export async function GET() {
+  const { data, error } = await supabase
+    .from("buildlogs")
+    .select("*")
+    .order("date", { ascending: false });
+
+  return new Response(JSON.stringify(data || []), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
 
 export async function POST(req) {
-  try {
-    const { title, description, image, username, tags } = await req.json();
+  const { title, description, image, username, tags } = await req.json();
 
-    if (!title || !description || !username) {
-      return new Response("Missing fields", { status: 400 });
-    }
-
-    const newLog = {
-      title,
-      description,
-      image,
-      username,
-      tags: tags?.split(",").map((t) => t.trim()),
-      date: new Date().toISOString(),
-    };
-
-    let existing = [];
-
-    try {
-      const data = await readFile(logsPath, "utf-8");
-      existing = JSON.parse(data);
-    } catch (err) {
-      // No file yet? No problem.
-    }
-
-    existing.push(newLog);
-
-    await writeFile(logsPath, JSON.stringify(existing, null, 2), "utf-8");
-
-    return new Response("Saved", { status: 200 });
-  } catch (err) {
-    console.error("❌ Error saving buildlog:", err);
-    return new Response("Server error", { status: 500 });
+  if (!title || !description || !username) {
+    return new Response("Missing fields", { status: 400 });
   }
+
+  await supabase.from("buildlogs").insert({
+    title,
+    description,
+    image_url: image,
+    username,
+    tags: tags?.split(",").map((tag) => tag.trim()),
+  });
+
+  return new Response("Saved", { status: 200 });
 }

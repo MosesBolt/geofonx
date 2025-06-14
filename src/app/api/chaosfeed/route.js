@@ -1,56 +1,28 @@
-import { writeFile, readFile } from "fs/promises";
-import path from "path";
-
-const chaosPath = path.resolve(process.cwd(), "chaosfeed.json");
-
-export async function POST(req) {
-  try {
-    const { title, description, emoji, comment, commentIndex } = await req.json();
-
-    let existing = [];
-    try {
-      const data = await readFile(chaosPath, "utf-8");
-      existing = JSON.parse(data);
-    } catch (err) {
-      // file not found? empty feed.
-    }
-
-    if (comment && typeof commentIndex === "number") {
-      existing[commentIndex].comments = existing[commentIndex].comments || [];
-      existing[commentIndex].comments.push(comment);
-    } else if (title && emoji) {
-      const post = {
-        title,
-        description,
-        emoji,
-        date: new Date().toISOString(),
-        comments: [],
-      };
-      existing.unshift(post);
-    } else {
-      return new Response("Missing fields", { status: 400 });
-    }
-
-    await writeFile(chaosPath, JSON.stringify(existing, null, 2), "utf-8");
-    return new Response("Saved", { status: 200 });
-  } catch (err) {
-    console.error("Chaos feed error:", err);
-    return new Response("Server error", { status: 500 });
-  }
-}
+import { supabase } from "../../../lib/supabaseClient";
 
 export async function GET() {
-  try {
-    const data = await readFile(chaosPath, "utf-8");
-    const posts = JSON.parse(data);
-    return new Response(JSON.stringify(posts), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    return new Response(JSON.stringify([]), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
+  const { data } = await supabase
+    .from("chaosfeed")
+    .select("*, comments(*)")
+    .order("date", { ascending: false });
+  return new Response(JSON.stringify(data || []), { status:200, headers:{ "Content-Type":"application/json" }});
+}
+
+export async function POST(req) {
+  const { title, description, emoji, video_url, comment, commentIndex, user_id, user_email } = await req.json();
+
+  if (comment !== undefined && typeof commentIndex === "number") {
+    const posts = await supabase.from("chaosfeed").select("id").order("date", { ascending: false });
+    const post = posts.data?.[commentIndex];
+    if (!post) return new Response("Invalid index", { status:400 });
+    await supabase.from("comments").insert({ chaos_id: post.id, content: comment });
+    return new Response("Saved", { status:200 });
   }
+
+  if (!title || !emoji || !user_id) {
+    return new Response("Missing fields", { status:400 });
+  }
+
+  await supabase.from("chaosfeed").insert({ title, description, emoji, video_url, user_id, user_email });
+  return new Response("Saved", { status:200 });
 }
